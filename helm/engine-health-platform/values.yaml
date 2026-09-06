@@ -1,0 +1,42 @@
+# Default values for the engine-health-platform chart.
+
+api:
+  replicaCount: 1
+  image:
+    repository: engine-health-api
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  service:
+    port: 8000
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  env:
+    ENGINE_HEALTH_ALLOWED_ORIGINS: "*"
+
+web:
+  replicaCount: 1
+  image:
+    repository: engine-health-web
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  service:
+    # NodePort chosen deliberately over an Ingress resource: it gives a
+    # simple, directly-curl-able external URL on a k3d/kind/minikube
+    # cluster without needing to install and configure an extra ingress
+    # controller (nginx-ingress, traefik, ...) - one less moving part to
+    # verify for a portfolio project. See README for the trade-off.
+    type: NodePort
+    port: 80
+    nodePort: 30080
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi

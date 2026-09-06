@@ -1,0 +1,24 @@
+services:
+  api:
+    build:
+      context: ./backend
+    image: engine-health-api:0.1.0
+    ports:
+      - "8000:8000"
+    environment:
+      ENGINE_HEALTH_ALLOWED_ORIGINS: "*"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8000), timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: ./frontend
+    image: engine-health-web:0.1.0
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy

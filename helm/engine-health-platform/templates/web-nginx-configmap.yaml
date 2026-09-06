@@ -1,0 +1,32 @@
+{{/*
+Overrides the nginx config baked into the image (which points at the
+docker-compose service name "api") with the real in-cluster Service name
+for the api component of *this* release. Rendered by Helm rather than via
+envsubst-on-container-start so the config is fully explicit, reviewable
+with `helm template`, and doesn't risk nginx runtime variables ($host,
+$remote_addr, ...) being clobbered by envsubst.
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "engine-health-platform.componentName" (list .Release.Name "web-nginx") }}
+data:
+  default.conf: |
+    server {
+        listen 80;
+        server_name _;
+
+        location /api/ {
+            proxy_pass http://{{ include "engine-health-platform.componentName" (list .Release.Name "api") }}:{{ .Values.api.service.port }}/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location / {
+            root /usr/share/nginx/html;
+            index index.html;
+            try_files $uri $uri/ /index.html;
+        }
+    }

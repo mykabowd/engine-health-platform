@@ -1,0 +1,113 @@
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 3rem;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #1f2937;
+}
+
+header h1 {
+  margin-bottom: 0.25rem;
+  font-size: 1.75rem;
+}
+
+.subtitle {
+  color: #6b7280;
+  margin-top: 0;
+}
+
+.error-banner {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.controls select {
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.4rem;
+  border: 1px solid #d1d5db;
+  font-size: 1rem;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.card {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  background: #f9fafb;
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 1rem;
+  color: #374151;
+}
+
+.card-ok {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.card-anomaly {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.big-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0.25rem 0;
+}
+
+.big-number .unit {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #6b7280;
+}
+
+.anomaly-flag {
+  font-weight: 600;
+}
+
+.sensor-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.z-score-hint {
+  margin-top: 0.75rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.chart-section {
+  margin-bottom: 2rem;
+}
+
+footer {
+  color: #9ca3af;
+  font-size: 0.85rem;
+  text-align: center;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 1rem;
+}

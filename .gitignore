@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+backend/report.xml
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+
+# Env files that may contain machine-specific values (examples are tracked)
+.env
+.env.local
+
+# Editors / OS
+.DS_Store
+
+# NOTE: backend/src/engine_health/artifacts/model.joblib is INTENTIONALLY
+# NOT ignored - it's a small (~75 KB), deliberately committed artifact so
+# the API is usable immediately after a fresh clone, with no training step
+# required (see README and backend/src/engine_health/train.py).

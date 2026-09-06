@@ -1,0 +1,10 @@
+apiVersion: v2
+name: engine-health-platform
+description: >
+  Chart Helm pour déployer la plateforme Engine Health (API FastAPI +
+  frontend React/nginx) sur Kubernetes. Deux composants (api, web), chacun
+  avec son Deployment + Service ; le service web est exposé en NodePort pour
+  un accès externe simple sans contrôleur Ingress.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

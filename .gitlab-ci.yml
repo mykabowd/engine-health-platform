@@ -1,0 +1,132 @@
+# GitLab CI pipeline for the Engine Health Platform.
+#
+# HONNÊTETÉ (voir README) : ce pipeline n'a PAS été exécuté sur un vrai
+# runner GitLab connecté (aucun compte GitLab utilisé dans ce contexte de
+# projet portfolio local). Il est syntaxiquement valide et suit les
+# pratiques standards (stages lint/test/build/deploy, cache pip/npm, usage
+# du registre de conteneurs intégré $CI_REGISTRY_IMAGE), mais n'a jamais
+# tourné réellement contre une infrastructure GitLab. Le stage `deploy` est
+# volontairement `when: manual` et documente en commentaires la commande
+# `helm upgrade --install` qui serait utilisée contre un cluster réel.
+
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  npm_config_cache: "$CI_PROJECT_DIR/.cache/npm"
+
+# ---------------------------------------------------------------------------
+# lint
+# ---------------------------------------------------------------------------
+
+lint:backend:
+  stage: lint
+  image: python:3.11-slim
+  cache:
+    key: "backend-lint-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .cache/pip
+  script:
+    - cd backend
+    - pip install ruff
+    - ruff check src tests
+  rules:
+    - changes:
+        - backend/**/*
+
+lint:frontend:
+  stage: lint
+  image: node:22-alpine
+  cache:
+    key: "frontend-lint-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .cache/npm
+  script:
+    - cd frontend
+    - npm ci
+    - npm run lint
+  rules:
+    - changes:
+        - frontend/**/*
+
+# ---------------------------------------------------------------------------
+# test
+# ---------------------------------------------------------------------------
+
+test:backend:
+  stage: test
+  image: python:3.11-slim
+  cache:
+    key: "backend-test-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .cache/pip
+  script:
+    - cd backend
+    - pip install -r requirements.txt
+    - pip install -e . pytest
+    - pytest -v --junitxml=report.xml
+  artifacts:
+    when: always
+    reports:
+      junit: backend/report.xml
+
+# ---------------------------------------------------------------------------
+# build
+# ---------------------------------------------------------------------------
+
+build:api-image:
+  stage: build
+  image: docker:27
+  services:
+    - docker:27-dind
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker build -t "$CI_REGISTRY_IMAGE/api:$CI_COMMIT_SHORT_SHA" -t "$CI_REGISTRY_IMAGE/api:latest" backend/
+    - docker push "$CI_REGISTRY_IMAGE/api:$CI_COMMIT_SHORT_SHA"
+    - docker push "$CI_REGISTRY_IMAGE/api:latest"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+build:web-image:
+  stage: build
+  image: docker:27
+  services:
+    - docker:27-dind
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker build -t "$CI_REGISTRY_IMAGE/web:$CI_COMMIT_SHORT_SHA" -t "$CI_REGISTRY_IMAGE/web:latest" frontend/
+    - docker push "$CI_REGISTRY_IMAGE/web:$CI_COMMIT_SHORT_SHA"
+    - docker push "$CI_REGISTRY_IMAGE/web:latest"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+# ---------------------------------------------------------------------------
+# deploy (illustratif, non connecté à une infra réelle - voir README)
+# ---------------------------------------------------------------------------
+
+deploy:helm:
+  stage: deploy
+  image: alpine/helm:3.15.0
+  when: manual
+  script:
+    - echo "Ce job est illustratif : aucun cluster/kubeconfig réel n'est configuré dans ce contexte."
+    # Dans une infra réelle, avec un kubeconfig injecté via une CI/CD
+    # variable protégée (ex. KUBECONFIG_B64) et un contexte kubectl valide :
+    #
+    #   echo "$KUBECONFIG_B64" | base64 -d > /tmp/kubeconfig
+    #   export KUBECONFIG=/tmp/kubeconfig
+    #   helm upgrade --install engine-health ./helm/engine-health-platform \
+    #     --namespace engine-health --create-namespace \
+    #     --set api.image.repository="$CI_REGISTRY_IMAGE/api" \
+    #     --set api.image.tag="$CI_COMMIT_SHORT_SHA" \
+    #     --set web.image.repository="$CI_REGISTRY_IMAGE/web" \
+    #     --set web.image.tag="$CI_COMMIT_SHORT_SHA" \
+    #     --wait --timeout 120s
+    #   kubectl -n engine-health rollout status deployment/engine-health-api
+    #   kubectl -n engine-health rollout status deployment/engine-health-web
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
