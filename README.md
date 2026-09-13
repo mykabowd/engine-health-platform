@@ -1,61 +1,64 @@
+🇫🇷 [Version française](README.fr.md)
+
 # engine-health-platform
 
-Service **full-stack** de "santé moteur" : une API Python (FastAPI) prédit
-la durée de vie utile restante (**RUL**, *Remaining Useful Life*) d'unités
-moteur d'avion à partir de lectures capteurs, et un frontend React affiche
-la flotte de démonstration, la prédiction courante et l'historique des
-cycles. Le tout est conteneurisé, et a été **réellement déployé et vérifié**
-sur un cluster Kubernetes local (`k3d` + `Helm`) — pas seulement écrit.
+**Full-stack** "engine health" service: a Python API (FastAPI) predicts
+the remaining useful life (**RUL**, *Remaining Useful Life*) of aircraft
+engine units from sensor readings, and a React frontend displays the demo
+fleet, the current prediction, and cycle history. The whole thing is
+containerized, and has been **actually deployed and verified** on a local
+Kubernetes cluster (`k3d` + `Helm`) — not just written.
 
-Continuité thématique avec [`ml-critical-systems-lab`](../ml-critical-systems-lab)
-(maintenance prédictive sur données NASA C-MAPSS) : même domaine
-(dégradation de moteurs d'avion), mais ici exposé comme un **service** réel
-(API + frontend + Docker + Kubernetes), et non plus seulement une étude
-hors-ligne (notebooks/rapport).
+Thematic continuity with
+[`ml-critical-systems-lab`](../ml-critical-systems-lab) (predictive
+maintenance on NASA C-MAPSS data): same domain (aircraft engine
+degradation), but here exposed as an actual **service** (API + frontend +
+Docker + Kubernetes), rather than just an offline study
+(notebooks/report).
 
-## Pourquoi ce projet
+## Why this project
 
-Ce projet a été construit pour combler, de façon honnête et vérifiable, les
-compétences de la fiche de poste **"Développeur Logiciel - Full Stack"**
-chez Thales Digital Solutions (réf. **R0334008**, Québec) qui n'étaient pas
-encore démontrées par mes deux autres projets portfolio :
+This project was built to honestly and verifiably demonstrate
+**full-stack** skills (Python API, React frontend, containerization, real
+Kubernetes deployment, CI/CD) for full-stack software developer roles —
+skills that were not yet demonstrated by my two other portfolio projects:
 
-| Exigence du poste (réf. R0334008) | Où c'est démontré ici |
+| Target skill | Where it's demonstrated here |
 |---|---|
-| Développer des services backend, API, microservices en Python | `backend/` — API FastAPI complète (4 endpoints, Pydantic, tests) |
-| Interfaces légères, prototypes web, démonstrateurs | `frontend/` — SPA React/Vite avec graphique |
-| Intégrer frontend, backend, services IA (modèle ML), BDD/API | Frontend → nginx (reverse proxy) → API FastAPI → modèle scikit-learn |
-| Créer/maintenir/optimiser des images Docker | `backend/Dockerfile`, `frontend/Dockerfile` (multi-stage) |
-| Développer/maintenir des Helm charts pour Kubernetes | `helm/engine-health-platform/` — **réellement installé** via `helm install` sur un cluster k3d |
-| Automatiser déploiements/configurations/environnements | `Makefile` (cibles `k8s-deploy`, `k8s-verify`, `k8s-destroy`), `.gitlab-ci.yml` |
-| Diagnostiquer/résoudre des problèmes Kubernetes | `docs/troubleshooting.md` — un vrai problème de connectivité `NodePort` rencontré et corrigé (voir plus bas) |
-| Frameworks frontend modernes (React, Angular...) | React 19 + Vite + recharts |
-| Outils CI/CD (GitLab CI) | `.gitlab-ci.yml` — 4 stages, syntaxiquement valide (non exécuté sur un runner réel, voir section CI/CD) |
+| Building backend services, APIs, microservices in Python | `backend/` — full FastAPI application (4 endpoints, Pydantic, tests) |
+| Lightweight interfaces, web prototypes, demos | `frontend/` — React/Vite SPA with a chart |
+| Integrating frontend, backend, AI services (ML model), DB/API | Frontend → nginx (reverse proxy) → FastAPI API → scikit-learn model |
+| Creating/maintaining/optimizing Docker images | `backend/Dockerfile`, `frontend/Dockerfile` (multi-stage) |
+| Developing/maintaining Helm charts for Kubernetes | `helm/engine-health-platform/` — **actually installed** via `helm install` on a k3d cluster |
+| Automating deployments/configuration/environments | `Makefile` (`k8s-deploy`, `k8s-verify`, `k8s-destroy` targets), `.gitlab-ci.yml` |
+| Diagnosing/fixing Kubernetes issues | `docs/troubleshooting.md` — a real `NodePort` connectivity issue encountered and fixed (see below) |
+| Modern frontend frameworks (React, Angular...) | React 19 + Vite + recharts |
+| CI/CD tooling (GitLab CI) | `.gitlab-ci.yml` — 4 stages, syntactically valid (not run on a real runner, see CI/CD section) |
 
-Ce que mes deux autres projets démontraient déjà et que ce projet ne
-répète **pas** en détail : RAG/LLM/agents/MCP (`genai-mcp-assistant`), ML
-classique approfondi sur données réelles NASA C-MAPSS avec rapport
-technique (`ml-critical-systems-lab`). Ici, le modèle ML est volontairement
-simple (un `RandomForestRegressor` sur données synthétiques) — l'objectif
-de *ce* projet est l'intégration full-stack + Kubernetes, pas la recherche
-en ML.
+What my other two projects already demonstrated and which this project
+does **not** repeat in detail: RAG/LLM/agents/MCP
+(`genai-mcp-assistant`), in-depth classic ML on real NASA C-MAPSS data
+with a technical report (`ml-critical-systems-lab`). Here, the ML model
+is deliberately simple (a `RandomForestRegressor` on synthetic data) —
+the goal of *this* project is full-stack + Kubernetes integration, not
+ML research.
 
-## Stack technique
+## Tech stack
 
-- **Backend** : Python 3.11, FastAPI, Pydantic, scikit-learn, numpy, joblib
-- **Frontend** : React 19, Vite, recharts
-- **Conteneurisation** : Docker (images multi-stage), docker-compose
-- **Kubernetes** : Helm (chart complet), déployé et vérifié sur `k3d`
-- **CI/CD** : GitLab CI (`.gitlab-ci.yml` — lint / test / build / deploy)
-- **Tests** : pytest + `fastapi.testclient.TestClient` (11 tests)
+- **Backend**: Python 3.11, FastAPI, Pydantic, scikit-learn, numpy, joblib
+- **Frontend**: React 19, Vite, recharts
+- **Containerization**: Docker (multi-stage images), docker-compose
+- **Kubernetes**: Helm (full chart), deployed and verified on `k3d`
+- **CI/CD**: GitLab CI (`.gitlab-ci.yml` — lint / test / build / deploy)
+- **Tests**: pytest + `fastapi.testclient.TestClient` (11 tests)
 
 ## Architecture
 
 ```
 ┌──────────────────┐   GET /               ┌──────────────────────┐
-│  Navigateur       │   GET/POST /api/*     │  nginx (web pod)      │
-│  (SPA React)       │ ───────────────────► │  - sert dist/ (React) │
-└──────────────────┘                        │  - proxy /api/* → api │
+│  Browser          │   GET/POST /api/*     │  nginx (web pod)      │
+│  (React SPA)       │ ───────────────────► │  - serves dist/ (React)│
+└──────────────────┘                        │  - proxies /api/* → api│
                                              └───────────┬───────────┘
                                                          │ HTTP (in-cluster)
                                                          ▼
@@ -71,94 +74,95 @@ en ML.
                                              ┌──────────────────────┐
                                              │  model.joblib           │
                                              │  RandomForestRegressor  │
-                                             │  (données synthétiques, │
-                                             │   voir train.py)         │
+                                             │  (synthetic data,       │
+                                             │   see train.py)          │
                                              └──────────────────────┘
 ```
 
-En local (docker-compose) et sur Kubernetes (Helm), la topologie est
-identique : deux composants (`api`, `web`), le frontend appelle toujours
-`/api/*` en same-origin, et c'est nginx qui route vers le service `api` —
-voir la section **Choix CORS vs reverse proxy** ci-dessous pour le détail.
+Locally (docker-compose) and on Kubernetes (Helm), the topology is
+identical: two components (`api`, `web`), the frontend always calls
+`/api/*` same-origin, and nginx routes to the `api` service — see the
+**CORS vs reverse proxy choice** section below for details.
 
-### Choix CORS vs reverse proxy
+### CORS vs reverse proxy choice
 
-Le frontend appelle toujours `/api/*` en **same-origin** (pas d'URL absolue
-codée en dur) :
+The frontend always calls `/api/*` **same-origin** (no hardcoded absolute
+URL):
 
-- En **production / Docker / Kubernetes**, nginx reverse-proxy `/api/*`
-  vers le service backend (`frontend/nginx.conf` en local,
-  `helm/.../templates/web-nginx-configmap.yaml` sur Kubernetes avec le
-  vrai nom du Service). Le navigateur ne fait donc **jamais** de requête
-  cross-origin dans ce chemin — pas de configuration CORS à faire confiance
-  côté client.
-- En **développement local** (`npm run dev`, Vite sur `:5173`, API sur
-  `:8000`, sans proxy), le frontend appelle directement
-  `http://localhost:8000` (via `VITE_API_URL`, voir `frontend/.env.development`)
-  et c'est là que le middleware CORS de FastAPI (`backend/src/engine_health/main.py`)
-  entre en jeu, pour que `npm run dev` fonctionne sans lancer nginx.
+- In **production / Docker / Kubernetes**, nginx reverse-proxies `/api/*`
+  to the backend service (`frontend/nginx.conf` locally,
+  `helm/.../templates/web-nginx-configmap.yaml` on Kubernetes with the
+  actual Service name). The browser therefore **never** makes a
+  cross-origin request on this path — no client-side CORS configuration
+  to trust.
+- In **local development** (`npm run dev`, Vite on `:5173`, API on
+  `:8000`, no proxy), the frontend calls
+  `http://localhost:8000` directly (via `VITE_API_URL`, see
+  `frontend/.env.development`), and that's where FastAPI's CORS
+  middleware (`backend/src/engine_health/main.py`) comes into play, so
+  that `npm run dev` works without running nginx.
 
-Les deux mécanismes coexistent donc, mais pour des raisons différentes et
-complémentaires — le proxy est la solution "robuste" retenue pour tout
-déploiement réel ; CORS est un confort de développement local uniquement.
+Both mechanisms coexist, but for different, complementary reasons — the
+proxy is the "robust" solution used for any real deployment; CORS is
+purely a local development convenience.
 
-## Démarrage rapide (local, sans Kubernetes)
+## Quickstart (local, without Kubernetes)
 
-### Backend seul (venv)
+### Backend only (venv)
 
 ```bash
-make backend-install   # crée backend/.venv, installe les dépendances
-make backend-train      # (ré)entraîne le modèle -> backend/src/engine_health/artifacts/model.joblib
+make backend-install   # creates backend/.venv, installs dependencies
+make backend-train      # (re)trains the model -> backend/src/engine_health/artifacts/model.joblib
 make backend-test        # pytest -v (11 tests)
-make backend-run          # uvicorn --reload sur :8000
+make backend-run          # uvicorn --reload on :8000
 ```
 
-Le modèle est déjà committé dans le repo (`model.joblib`, ~76 Ko) : `make
-backend-train` n'est nécessaire que si vous voulez le régénérer.
+The model is already committed to the repo (`model.joblib`, ~76 KB):
+`make backend-train` is only needed if you want to regenerate it.
 
-### Frontend seul (dev server Vite)
+### Frontend only (Vite dev server)
 
 ```bash
 make frontend-install
-make frontend-dev   # http://localhost:5173, appelle http://localhost:8000 (VITE_API_URL)
+make frontend-dev   # http://localhost:5173, calls http://localhost:8000 (VITE_API_URL)
 ```
 
-### Les deux ensemble via Docker Compose (recommandé)
+### Both together via Docker Compose (recommended)
 
 ```bash
 make docker-up
-# équivalent à : docker compose up --build
+# equivalent to: docker compose up --build
 ```
 
-Puis :
+Then:
 
 ```bash
-curl http://localhost:8000/health          # API directe
+curl http://localhost:8000/health          # direct API
 curl http://localhost:8080/api/engines      # via nginx (frontend)
-open http://localhost:8080                   # SPA React
+open http://localhost:8080                   # React SPA
 ```
 
-Arrêt : `make docker-down` (= `docker compose down -v`).
+Shutdown: `make docker-down` (= `docker compose down -v`).
 
-**Vérifié réellement** le 2026-09-06 : `docker compose build` (2 images
-construites), `docker compose up -d` (2 conteneurs `healthy`), puis :
+**Actually verified** on 2026-09-06: `docker compose build` (2 images
+built), `docker compose up -d` (2 `healthy` containers), then:
 - `curl http://localhost:8000/health` → `{"status":"ok","model_loaded":true,...}`
-- `curl http://localhost:8080/api/engines` → liste de 6 unités moteur avec RUL prédit
-- `curl -X POST http://localhost:8080/api/predict -d '{...}'` → prédiction + flag d'anomalie
-- `curl http://localhost:8080/` → `HTTP 200` (page React servie par nginx)
+- `curl http://localhost:8080/api/engines` → list of 6 engine units with predicted RUL
+- `curl -X POST http://localhost:8080/api/predict -d '{...}'` → prediction + anomaly flag
+- `curl http://localhost:8080/` → `HTTP 200` (React page served by nginx)
 
-## Démarrage rapide (Kubernetes local, k3d + Helm)
+## Quickstart (local Kubernetes, k3d + Helm)
 
-Prérequis installés pour ce projet : `brew install k3d kubectl helm`
-(Docker déjà disponible via Colima).
+Prerequisites installed for this project: `brew install k3d kubectl helm`
+(Docker already available via Colima).
 
 ```bash
-make k8s-deploy   # crée le cluster k3d, build+importe les images, helm install, attend le rollout
-make k8s-verify    # kubectl get pods/svc + curl sur le NodePort 30080
-make k8s-destroy    # helm uninstall + k3d cluster delete (nettoyage complet)
+make k8s-deploy   # creates the k3d cluster, builds+imports images, helm install, waits for rollout
+make k8s-verify    # kubectl get pods/svc + curl on NodePort 30080
+make k8s-destroy    # helm uninstall + k3d cluster delete (full cleanup)
 ```
 
-Ou étape par étape :
+Or step by step:
 
 ```bash
 k3d cluster create engine-health -p "30080:30080@server:0" --wait
@@ -177,126 +181,125 @@ curl http://localhost:30080/api/health
 curl http://localhost:30080/
 ```
 
-**Ce déploiement a été réellement exécuté et vérifié** le 2026-09-06 (cluster
-détruit ensuite pour ne rien laisser tourner). Sorties complètes de
-`kubectl get pods`, `kubectl get svc`, `helm install`, et des `curl` de
-vérification : voir **[`docs/k8s-verification.md`](docs/k8s-verification.md)**.
+**This deployment was actually executed and verified** on 2026-09-06
+(cluster destroyed afterward to leave nothing running). Full output of
+`kubectl get pods`, `kubectl get svc`, `helm install`, and verification
+`curl` commands: see
+**[`docs/k8s-verification.md`](docs/k8s-verification.md)**.
 
-Un vrai problème de connectivité a été rencontré et corrigé pendant ce
-déploiement (le `NodePort` n'était pas joignable depuis l'hôte macOS sans
-mapping de port explicite à la création du cluster k3d) : diagnostic complet
-dans **[`docs/troubleshooting.md`](docs/troubleshooting.md)**.
+A real connectivity issue was encountered and fixed during this
+deployment (the `NodePort` was not reachable from the macOS host without
+an explicit port mapping at k3d cluster creation): full diagnostic in
+**[`docs/troubleshooting.md`](docs/troubleshooting.md)**.
 
-### Pourquoi NodePort plutôt qu'un Ingress
+### Why NodePort rather than an Ingress
 
-Un `Service` de type `NodePort` a été choisi plutôt qu'une ressource
-`Ingress` : cela donne un point d'accès externe directement `curl`-able sans
-installer et configurer un contrôleur Ingress supplémentaire
-(nginx-ingress, Traefik...) sur le cluster local — une dépendance
-supplémentaire à opérer, pas nécessaire pour démontrer les compétences
-visées (écriture et déploiement réel d'un chart Helm). Voir
-`helm/engine-health-platform/values.yaml`.
+A `NodePort`-type `Service` was chosen over an `Ingress` resource: this
+gives a directly `curl`-able external access point without installing and
+configuring an additional Ingress controller (nginx-ingress, Traefik...)
+on the local cluster — an extra dependency to operate that isn't needed
+to demonstrate the targeted skills (writing and actually deploying a Helm
+chart). See `helm/engine-health-platform/values.yaml`.
 
-## Structure du projet
+## Project structure
 
 ```
 engine-health-platform/
 ├── backend/
 │   ├── src/engine_health/
-│   │   ├── config.py         # configuration centralisée (env vars)
-│   │   ├── data_gen.py         # générateur de données synthétiques de dégradation
-│   │   ├── train.py             # entraîne le RandomForestRegressor -> model.joblib
-│   │   ├── model.py              # chargement du modèle + prédiction + détection d'anomalie
-│   │   ├── demo_data.py           # flotte de démo en mémoire (seed fixe)
-│   │   ├── schemas.py              # modèles Pydantic (requêtes/réponses)
-│   │   ├── main.py                  # application FastAPI (4 endpoints)
-│   │   └── artifacts/model.joblib    # modèle entraîné, committé (~76 Ko)
-│   ├── tests/test_api.py               # 11 tests pytest (TestClient)
+│   │   ├── config.py         # centralized configuration (env vars)
+│   │   ├── data_gen.py         # synthetic degradation data generator
+│   │   ├── train.py             # trains the RandomForestRegressor -> model.joblib
+│   │   ├── model.py              # model loading + prediction + anomaly detection
+│   │   ├── demo_data.py           # in-memory demo fleet (fixed seed)
+│   │   ├── schemas.py              # Pydantic models (requests/responses)
+│   │   ├── main.py                  # FastAPI application (4 endpoints)
+│   │   └── artifacts/model.joblib    # trained, committed model (~76 KB)
+│   ├── tests/test_api.py               # 11 pytest tests (TestClient)
 │   ├── Dockerfile
 │   ├── pyproject.toml
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
-│   │   ├── App.jsx            # page unique : sélecteur, cartes RUL/anomalie, graphique
-│   │   ├── api.js               # wrapper fetch (VITE_API_URL configurable)
+│   │   ├── App.jsx            # single page: selector, RUL/anomaly cards, chart
+│   │   ├── api.js               # fetch wrapper (configurable VITE_API_URL)
 │   │   └── ...
-│   ├── nginx.conf                # reverse-proxy /api/* (config par défaut, docker-compose)
-│   └── Dockerfile                 # multi-stage : node (build) -> nginx (serve)
+│   ├── nginx.conf                # reverse-proxy /api/* (default config, docker-compose)
+│   └── Dockerfile                 # multi-stage: node (build) -> nginx (serve)
 ├── helm/engine-health-platform/
 │   ├── Chart.yaml
 │   ├── values.yaml
-│   └── templates/                  # Deployment+Service (api, web), ConfigMap nginx
+│   └── templates/                  # Deployment+Service (api, web), nginx ConfigMap
 ├── docs/
-│   ├── k8s-verification.md          # preuves du déploiement k3d/Helm réel
-│   └── troubleshooting.md            # problèmes rencontrés et corrigés
+│   ├── k8s-verification.md          # proof of the real k3d/Helm deployment
+│   └── troubleshooting.md            # issues encountered and fixed
 ├── docker-compose.yml
-├── .gitlab-ci.yml                     # pipeline lint/test/build/deploy
+├── .gitlab-ci.yml                     # lint/test/build/deploy pipeline
 ├── Makefile
 └── .gitignore
 ```
 
 ## CI/CD — GitLab CI
 
-Un `.gitlab-ci.yml` complet est fourni avec 4 stages :
+A complete `.gitlab-ci.yml` is provided with 4 stages:
 
-1. **lint** : `ruff` sur le backend, `npm run lint` (oxlint) sur le frontend
-2. **test** : `pytest` sur le backend (avec rapport JUnit en artefact)
-3. **build** : `docker build` des 2 images, poussées vers `$CI_REGISTRY_IMAGE`
-   (registre de conteneurs GitLab intégré)
-4. **deploy** : stage `when: manual`, qui **documente en commentaires**
-   comment un `helm upgrade --install` serait exécuté contre un cluster réel
+1. **lint**: `ruff` on the backend, `npm run lint` (oxlint) on the frontend
+2. **test**: `pytest` on the backend (with a JUnit report artifact)
+3. **build**: `docker build` of the 2 images, pushed to
+   `$CI_REGISTRY_IMAGE` (GitLab's built-in container registry)
+4. **deploy**: `when: manual` stage that **documents in comments** how a
+   `helm upgrade --install` would be run against a real cluster
 
-**Honnêteté** : ce pipeline **n'a pas été exécuté sur un vrai runner GitLab**
-(aucun compte/projet GitLab connecté dans ce contexte de projet portfolio
-local). Il a été vérifié comme suit :
-- YAML syntaxiquement valide (parsé avec `PyYAML`)
-- Chaque commande individuelle (`ruff check`, `pytest`, `npm run lint`,
-  `docker build`) a été **réellement exécutée en local** avec succès (voir
-  sections précédentes) — le pipeline assemble ces mêmes commandes dans la
-  syntaxe GitLab CI standard, mais l'exécution bout-en-bout sur un runner
-  n'a pas été testée.
+**Honesty note**: this pipeline **has not been run on a real GitLab
+runner** (no GitLab account/project connected in this local portfolio
+project context). It was verified as follows:
+- YAML is syntactically valid (parsed with `PyYAML`)
+- Each individual command (`ruff check`, `pytest`, `npm run lint`,
+  `docker build`) was **actually run locally** successfully (see
+  previous sections) — the pipeline assembles these same commands using
+  standard GitLab CI syntax, but end-to-end execution on a runner has not
+  been tested.
 
-## Ce que ce projet démontre (et ce qu'il ne démontre pas)
+## What this project demonstrates (and what it does not)
 
-**Démontre** :
-- Développement d'une API Python (FastAPI) avec plusieurs endpoints,
-  validation Pydantic, tests automatisés (pytest, 11 tests verts)
-- Développement d'un frontend React (Vite) consommant cette API,
-  graphique de données (recharts), configuration par variable d'env
-- Conteneurisation Docker multi-services (image Python légère, build
-  multi-stage node→nginx), orchestrées via docker-compose
-- Écriture **et déploiement réel vérifié** d'un chart Helm sur un cluster
-  Kubernetes local (k3d) : `helm install`, pods `Running`/`Ready`, service
-  `NodePort` interrogé avec succès via `curl`
-- Diagnostic et correction d'un vrai problème de connectivité Kubernetes
-  (NodePort/k3d), documenté avec la cause et la correction exacte
-- Structure d'un pipeline CI/CD GitLab (stages lint/test/build/deploy)
-  suivant les pratiques standards
+**Demonstrates**:
+- Building a Python API (FastAPI) with multiple endpoints, Pydantic
+  validation, automated tests (pytest, 11 passing tests)
+- Building a React frontend (Vite) consuming this API, a data chart
+  (recharts), configuration via environment variables
+- Multi-service Docker containerization (lightweight Python image,
+  multi-stage node→nginx build), orchestrated via docker-compose
+- Writing **and actually deploying, with verification,** a Helm chart on
+  a local Kubernetes cluster (k3d): `helm install`, `Running`/`Ready`
+  pods, `NodePort` service successfully queried via `curl`
+- Diagnosing and fixing a real Kubernetes connectivity issue
+  (NodePort/k3d), documented with the exact cause and fix
+- Structuring a GitLab CI/CD pipeline (lint/test/build/deploy stages)
+  following standard practices
 
-**Ne démontre PAS** (à ne pas sur-vendre sur un CV) :
-- Exécution réelle du pipeline CI/CD sur un runner GitLab connecté (pas de
-  compte GitLab utilisé ici — voir section CI/CD ci-dessus)
-- Contrôleur Ingress, TLS, ou tout "production hardening" (le NodePort est
-  une solution volontairement simple pour un cluster de démo local)
-- Autoscaling (HPA), haute disponibilité multi-nœuds/multi-réplicas réelle
-  (le chart supporte `replicaCount` mais n'a été testé qu'avec 1 réplica
-  par composant sur un cluster à un seul nœud)
-- Authentification/autorisation applicative (aucun endpoint n'est protégé —
-  ce n'est pas un système de production, mais une démo)
-- Un modèle de ML sophistiqué ou entraîné sur des données réelles NASA
-  C-MAPSS (voir `ml-critical-systems-lab` pour ce volet) : ici, données
-  100% synthétiques générées par `numpy`, modèle `RandomForestRegressor`
-  volontairement simple — l'objectif est l'intégration full-stack, pas la
-  performance du modèle
+**Does NOT demonstrate** (should not be oversold on a résumé):
+- Actual execution of the CI/CD pipeline on a connected GitLab runner (no
+  GitLab account used here — see CI/CD section above)
+- Ingress controller, TLS, or any "production hardening" (NodePort is a
+  deliberately simple solution for a local demo cluster)
+- Autoscaling (HPA), real multi-node/multi-replica high availability
+  (the chart supports `replicaCount` but has only been tested with 1
+  replica per component on a single-node cluster)
+- Application-level authentication/authorization (no endpoint is
+  protected — this is not a production system, but a demo)
+- A sophisticated ML model or one trained on real NASA C-MAPSS data (see
+  `ml-critical-systems-lab` for that aspect): here, 100% synthetic data
+  generated by `numpy`, a deliberately simple `RandomForestRegressor`
+  model — the goal is full-stack integration, not model performance
 
-## Limites connues / pistes d'amélioration
+## Known limitations / possible improvements
 
-- Pas de base de données réelle : la "flotte" de démonstration est générée
-  en mémoire au démarrage du process (seed fixe), pas persistée.
-- Le modèle n'est pas ré-entraîné automatiquement en CI (pas de pipeline de
-  ML/MLOps) — `model.joblib` est un artefact statique committé.
-- Le graphique frontend n'affiche que l'historique déjà connu de chaque
-  unité de démo ; pas de simulation "en direct" de nouveaux cycles.
-- Un seul type de modèle testé (RandomForestRegressor) ; pas de comparaison
-  d'algorithmes (ce n'est pas l'objectif de ce projet, voir
-  `ml-critical-systems-lab` pour ce type de travail).
+- No real database: the demo "fleet" is generated in memory at process
+  startup (fixed seed), not persisted.
+- The model is not automatically retrained in CI (no ML/MLOps pipeline)
+  — `model.joblib` is a static, committed artifact.
+- The frontend chart only shows the already-known history of each demo
+  unit; there's no "live" simulation of new cycles.
+- Only one model type tested (RandomForestRegressor); no algorithm
+  comparison (that's not the goal of this project — see
+  `ml-critical-systems-lab` for that kind of work).
