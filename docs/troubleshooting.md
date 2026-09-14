@@ -2,9 +2,9 @@
 
 Ce fichier documente honnêtement les problèmes réellement rencontrés pendant
 le développement/déploiement de ce projet, et comment ils ont été
-diagnostiqués et résolus - dans l'esprit de l'exigence de poste "diagnostiquer
-et résoudre des problèmes liés aux conteneurs, aux dépendances, aux
-configurations et aux environnements Kubernetes".
+diagnostiqués et résolus - dans une logique de documentation honnête des
+problèmes réels liés aux conteneurs, aux dépendances, aux configurations et
+aux environnements Kubernetes.
 
 ## 1. `NodePort` injoignable depuis l'hôte macOS sur un cluster k3d
 

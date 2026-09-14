@@ -18,12 +18,13 @@ Docker + Kubernetes), rather than just an offline study
 
 ## Why this project
 
-This project was built to honestly and verifiably demonstrate
-**full-stack** skills (Python API, React frontend, containerization, real
-Kubernetes deployment, CI/CD) for full-stack software developer roles —
-skills that were not yet demonstrated by my two other portfolio projects:
+This project was born from wanting to design a complete application,
+from the user interface all the way down to its deployment, while
+putting into practice a modern architecture and several complementary
+technologies (Python API, React frontend, containerization, real
+Kubernetes deployment, CI/CD):
 
-| Target skill | Where it's demonstrated here |
+| Technical aspect | Where it's implemented |
 |---|---|
 | Building backend services, APIs, microservices in Python | `backend/` — full FastAPI application (4 endpoints, Pydantic, tests) |
 | Lightweight interfaces, web prototypes, demos | `frontend/` — React/Vite SPA with a chart |
@@ -35,13 +36,14 @@ skills that were not yet demonstrated by my two other portfolio projects:
 | Modern frontend frameworks (React, Angular...) | React 19 + Vite + recharts |
 | CI/CD tooling (GitLab CI) | `.gitlab-ci.yml` — 4 stages, syntactically valid (not run on a real runner, see CI/CD section) |
 
-What my other two projects already demonstrated and which this project
-does **not** repeat in detail: RAG/LLM/agents/MCP
-(`genai-mcp-assistant`), in-depth classic ML on real NASA C-MAPSS data
-with a technical report (`ml-critical-systems-lab`). Here, the ML model
-is deliberately simple (a `RandomForestRegressor` on synthetic data) —
-the goal of *this* project is full-stack + Kubernetes integration, not
-ML research.
+It complements the two other projects in my portfolio by taking a
+different approach and offering a more complete, hands-on technical
+experience — where [`genai-mcp-assistant`](../genai-mcp-assistant) explores
+RAG, agents, and an MCP server, and
+[`ml-critical-systems-lab`](../ml-critical-systems-lab) in-depth classic ML
+with a technical report. Here, the ML model is deliberately simple (a
+`RandomForestRegressor` on synthetic data) — the goal of *this* project is
+full-stack + Kubernetes integration, not ML research.
 
 ## Tech stack
 

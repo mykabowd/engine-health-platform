@@ -17,13 +17,13 @@ hors-ligne (notebooks/rapport).
 
 ## Pourquoi ce projet
 
-Ce projet a été construit pour démontrer, de façon honnête et vérifiable,
-des compétences **full-stack** (API Python, frontend React,
-conteneurisation, déploiement Kubernetes réel, CI/CD) pour des rôles de
-développeur logiciel full-stack — des compétences qui n'étaient pas encore
-démontrées par mes deux autres projets portfolio :
+Ce projet est né de la volonté de concevoir une application complète, de
+l'interface utilisateur jusqu'à son déploiement, en mettant en pratique
+une architecture moderne et plusieurs technologies complémentaires (API
+Python, frontend React, conteneurisation, déploiement Kubernetes réel,
+CI/CD) :
 
-| Compétence visée | Où c'est démontré ici |
+| Aspect technique | Où c'est implémenté |
 |---|---|
 | Développer des services backend, API, microservices en Python | `backend/` — API FastAPI complète (4 endpoints, Pydantic, tests) |
 | Interfaces légères, prototypes web, démonstrateurs | `frontend/` — SPA React/Vite avec graphique |
@@ -35,10 +35,12 @@ démontrées par mes deux autres projets portfolio :
 | Frameworks frontend modernes (React, Angular...) | React 19 + Vite + recharts |
 | Outils CI/CD (GitLab CI) | `.gitlab-ci.yml` — 4 stages, syntaxiquement valide (non exécuté sur un runner réel, voir section CI/CD) |
 
-Ce que mes deux autres projets démontraient déjà et que ce projet ne
-répète **pas** en détail : RAG/LLM/agents/MCP (`genai-mcp-assistant`), ML
-classique approfondi sur données réelles NASA C-MAPSS avec rapport
-technique (`ml-critical-systems-lab`). Ici, le modèle ML est volontairement
+Il vient ainsi compléter les deux autres projets de mon portfolio en
+proposant une approche différente et une expérience technique plus
+complète — là où [`genai-mcp-assistant`](../genai-mcp-assistant) explore le
+RAG, les agents et le serveur MCP, et
+[`ml-critical-systems-lab`](../ml-critical-systems-lab) le ML classique
+approfondi avec un rapport technique. Ici, le modèle ML est volontairement
 simple (un `RandomForestRegressor` sur données synthétiques) — l'objectif
 de *ce* projet est l'intégration full-stack + Kubernetes, pas la recherche
 en ML.
